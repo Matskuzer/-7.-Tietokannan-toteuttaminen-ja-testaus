@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQLite Database Interface</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { width: 80%; margin: 0 auto; }
+        h1 { text-align: center; }
+        form { margin-bottom: 20px; }
+        .message { color: green; }
+        .error { color: red; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SQLite Database Interface</h1>
+
+        <h2>Add User</h2>
+        <form id="addUserForm">
+            <label for="käyttäjänimi">Käyttäjänimi:</label>
+            <input type="text" id="käyttäjänimi" name="käyttäjänimi" required>
+            <br>
+            <label for="sähköposti">Sähköposti:</label>
+            <input type="email" id="sähköposti" name="sähköposti" required>
+            <br>
+            <button type="submit">Add User</button>
+        </form>
+        <div id="addUserMessage" class="message"></div>
+
+        <h2>View Users</h2>
+        <button id="viewUsersButton">View Users</button>
+        <table id="usersTable">
+            <thead>
+                <tr>
+                    <th>Numero</th>
+                    <th>Käyttäjänimi</th>
+                    <th>Sähköposti</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <h2>Delete User</h2>
+        <form id="deleteUserForm">
+            <label for="numero">Numero:</label>
+            <input type="number" id="numero" name="numero" required>
+            <br>
+            <button type="submit">Delete User</button>
+        </form>
+        <div id="deleteUserMessage" class="message"></div>
+    </div>
+
+    <script>
+        document.getElementById('addUserForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const käyttäjänimi = document.getElementById('käyttäjänimi').value;
+            const sähköposti = document.getElementById('sähköposti').value;
+
+            try {
+                const response = await fetch('http://localhost:3000/add-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ käyttäjänimi, sähköposti })
+                });
+                const result = await response.text();
+                document.getElementById('addUserMessage').textContent = result;
+            } catch (error) {
+                document.getElementById('addUserMessage').textContent = 'Error: ' + error.message;
+            }
+        });
+
+        document.getElementById('viewUsersButton').addEventListener('click', async function() {
+            try {
+                const response = await fetch('http://localhost:3000/users');
+                const users = await response.json();
+                const tbody = document.querySelector('#usersTable tbody');
+                tbody.innerHTML = '';
+                users.forEach(user => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${user.numero}</td><td>${user.käyttäjänimi}</td><td>${user.sähköposti}</td><td><button onclick="deleteUser(${user.numero})">Delete</button></td>`;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error fetching users:', error);
+            }
+        });
+
+        document.getElementById('deleteUserForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const numero = document.getElementById('numero').value;
+
+            try {
+                const response = await fetch(`http://localhost:3000/delete-user/${numero}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.text();
+                document.getElementById('deleteUserMessage').textContent = result;
+            } catch (error) {
+                document.getElementById('deleteUserMessage').textContent = 'Error: ' + error.message;
+            }
+        });
+
+        async function deleteUser(numero) {
+            try {
+                const response = await fetch(`http://localhost:3000/delete-user/${numero}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.text();
+                document.getElementById('deleteUserMessage').textContent = result;
+                document.getElementById('viewUsersButton').click();
+            } catch (error) {
+                document.getElementById('deleteUserMessage').textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
