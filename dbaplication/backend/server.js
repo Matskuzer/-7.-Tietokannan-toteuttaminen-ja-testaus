@@ -6,11 +6,11 @@ app.use(express.json()); // Middleware to parse JSON bodies
 app.use(express.static('public'));
 
 // Connect to the database
-const db = new sqlite3.Database('mydatabase.db', (err) => {
+const db = new sqlite3.Database('.mydatabase.db', (err) => {
     if (err) {
-        console.error('Error opening database:', err.message);
+        console.error('Virhe tietokantaa avatessa:', err.message);
     } else {
-        console.log('Connected to the SQLite database.');
+        console.log('Yhteys SQLite-tietokantaan on muodostettu.');
     }
 });
 
@@ -87,6 +87,10 @@ const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Palvelin käynnissä portissa ${PORT}`);
 });
+
+const cors = require('cors');
+app.use(cors());  // Tämä sallii CORS-pyynnöt
+
 
 // Close the database connection when the app is terminated
 process.on('SIGINT', () => {
