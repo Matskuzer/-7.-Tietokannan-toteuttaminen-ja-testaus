@@ -1,9 +1,11 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
+const cors = require('cors'); // Ensure cors is imported and used before routes
 
 const app = express();
 app.use(express.json()); // Middleware to parse JSON bodies
-app.use(express.static('public'));
+app.use(cors());  // Allow CORS requests globally
+app.use(express.static('public')); // Serve static files from 'public' directory
 
 // Connect to the database
 const db = new sqlite3.Database('.mydatabase.db', (err) => {
@@ -88,10 +90,6 @@ app.listen(PORT, () => {
     console.log(`Palvelin käynnissä portissa ${PORT}`);
 });
 
-const cors = require('cors');
-app.use(cors());  // Tämä sallii CORS-pyynnöt
-
-
 // Close the database connection when the app is terminated
 process.on('SIGINT', () => {
     db.close((err) => {
@@ -103,3 +101,4 @@ process.on('SIGINT', () => {
         process.exit(0);
     });
 });
+

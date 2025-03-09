@@ -1,125 +1,197 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SQLite Database Interface</title>
+    <title>Käyttäjien Hallinta</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        .container { width: 80%; margin: 0 auto; }
-        h1 { text-align: center; }
-        form { margin-bottom: 20px; }
-        .message { color: green; }
-        .error { color: red; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
+        /* Reset some styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f3f3;
+            padding: 20px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Form Styles */
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 10px;
+            margin: 5px 0;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* User List Styles */
+        .user-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .user-list li {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        button.delete {
+            background-color: #f44336;
+        }
+
+        button.delete:hover {
+            background-color: #e53935;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>SQLite Database Interface</h1>
+        <h1>Käyttäjien Hallinta</h1>
+        <div class="form-container">
+            <input type="text" id="username" placeholder="Käyttäjänimi">
+            <input type="email" id="email" placeholder="Sähköposti">
+            <button id="submitButton">Lisää käyttäjä</button>
+            <button id="cancelButton" style="display:none;">Peruuta</button>
+        </div>
 
-        <h2>Add User</h2>
-        <form id="addUserForm">
-            <label for="käyttäjänimi">Käyttäjänimi:</label>
-            <input type="text" id="käyttäjänimi" name="käyttäjänimi" required>
-            <br>
-            <label for="sähköposti">Sähköposti:</label>
-            <input type="email" id="sähköposti" name="sähköposti" required>
-            <br>
-            <button type="submit">Add User</button>
-        </form>
-        <div id="addUserMessage" class="message"></div>
-
-        <h2>View Users</h2>
-        <button id="viewUsersButton">View Users</button>
-        <table id="usersTable">
-            <thead>
-                <tr>
-                    <th>Numero</th>
-                    <th>Käyttäjänimi</th>
-                    <th>Sähköposti</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-
-        <h2>Delete User</h2>
-        <form id="deleteUserForm">
-            <label for="numero">Numero:</label>
-            <input type="number" id="numero" name="numero" required>
-            <br>
-            <button type="submit">Delete User</button>
-        </form>
-        <div id="deleteUserMessage" class="message"></div>
+        <h2>Kaikki käyttäjät</h2>
+        <ul id="userList" class="user-list"></ul>
     </div>
 
     <script>
-        document.getElementById('addUserForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const käyttäjänimi = document.getElementById('käyttäjänimi').value;
-            const sähköposti = document.getElementById('sähköposti').value;
+        document.getElementById('submitButton').addEventListener('click', addUser);
+        document.getElementById('cancelButton').addEventListener('click', cancelEdit);
 
-            try {
-                const response = await fetch('http://localhost:3000/add-user', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ käyttäjänimi, sähköposti })
+        let editingUserId = null;
+
+        // Fetch and display all users
+        function fetchUsers() {
+            fetch('http://localhost:3000/users')
+                .then(response => response.json())
+                .then(users => {
+                    const userList = document.getElementById('userList');
+                    userList.innerHTML = '';
+                    users.forEach(user => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `${user.käyttäjänimi} - ${user.sähköposti}
+                            <button class="edit" onclick="editUser(${user.numero})">Muokkaa</button>
+                            <button class="delete" onclick="deleteUser(${user.numero})">Poista</button>`;
+                        userList.appendChild(li);
+                    });
                 });
-                const result = await response.text();
-                document.getElementById('addUserMessage').textContent = result;
-            } catch (error) {
-                document.getElementById('addUserMessage').textContent = 'Error: ' + error.message;
-            }
-        });
-
-        document.getElementById('viewUsersButton').addEventListener('click', async function() {
-            try {
-                const response = await fetch('http://localhost:3000/users');
-                const users = await response.json();
-                const tbody = document.querySelector('#usersTable tbody');
-                tbody.innerHTML = '';
-                users.forEach(user => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td>${user.numero}</td><td>${user.käyttäjänimi}</td><td>${user.sähköposti}</td><td><button onclick="deleteUser(${user.numero})">Delete</button></td>`;
-                    tbody.appendChild(row);
-                });
-            } catch (error) {
-                console.error('Error fetching users:', error);
-            }
-        });
-
-        document.getElementById('deleteUserForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const numero = document.getElementById('numero').value;
-
-            try {
-                const response = await fetch(`http://localhost:3000/delete-user/${numero}`, {
-                    method: 'DELETE'
-                });
-                const result = await response.text();
-                document.getElementById('deleteUserMessage').textContent = result;
-            } catch (error) {
-                document.getElementById('deleteUserMessage').textContent = 'Error: ' + error.message;
-            }
-        });
-
-        async function deleteUser(numero) {
-            try {
-                const response = await fetch(`http://localhost:3000/delete-user/${numero}`, {
-                    method: 'DELETE'
-                });
-                const result = await response.text();
-                document.getElementById('deleteUserMessage').textContent = result;
-                document.getElementById('viewUsersButton').click();
-            } catch (error) {
-                document.getElementById('deleteUserMessage').textContent = 'Error: ' + error.message;
-            }
         }
+
+        // Add or update user
+        function addUser() {
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+
+            if (!username || !email) {
+                alert('Täytä kaikki kentät');
+                return;
+            }
+
+            const url = editingUserId ? 
+                `http://localhost:3000/update-user/${editingUserId}` :
+                'http://localhost:3000/add-user';
+
+            const method = editingUserId ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ käyttäjänimi: username, sähköposti: email })
+            })
+            .then(response => response.json())
+            .then(() => {
+                clearForm();
+                fetchUsers(); // Refresh the user list after add/update
+            })
+            .catch(error => console.error(error));
+        }
+
+        // Edit user
+        function editUser(userId) {
+            fetch(`http://localhost:3000/users`)
+                .then(response => response.json())
+                .then(users => {
+                    const user = users.find(u => u.numero === userId);
+                    document.getElementById('username').value = user.käyttäjänimi;
+                    document.getElementById('email').value = user.sähköposti;
+                    document.getElementById('submitButton').textContent = 'Päivitä käyttäjä';
+                    document.getElementById('cancelButton').style.display = 'inline-block';
+                    editingUserId = userId;
+                });
+        }
+
+        // Cancel edit and reset the form
+        function cancelEdit() {
+            clearForm();
+        }
+
+        // Delete user
+        function deleteUser(userId) {
+            fetch(`http://localhost:3000/delete-user/${userId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(() => {
+                fetchUsers(); // Refresh the user list after deletion
+            })
+            .catch(error => console.error(error));
+        }
+
+        // Clear the form fields and reset buttons
+        function clearForm() {
+            document.getElementById('username').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('submitButton').textContent = 'Lisää käyttäjä';
+            document.getElementById('cancelButton').style.display = 'none';
+            editingUserId = null;
+        }
+
+        // Initially load users
+        fetchUsers();
     </script>
 </body>
 </html>

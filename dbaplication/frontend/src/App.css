@@ -1,38 +1,126 @@
-.App {
+/* General Styles */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f7fc;
+  margin: 0;
+  padding: 0;
+}
+
+/* Container */
+.container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: white;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+/* Headings */
+.heading {
   text-align: center;
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #333;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.sub-heading {
+  font-size: 1.5rem;
+  margin-top: 30px;
+  color: #555;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* Form */
+.form-container {
   display: flex;
   flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.input-field {
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.submit-button, .cancel-button {
+  padding: 10px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #4CAF50;
+  color: white;
+  transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+  background-color: #45a049;
+}
+
+.cancel-button {
+  background-color: #f44336;
+}
+
+.cancel-button:hover {
+  background-color: #e53935;
+}
+
+/* User List */
+.user-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.user-item {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  background-color: #f9f9f9;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.user-info {
+  font-size: 1rem;
+  color: #333;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+}
+
+.edit-button, .delete-button {
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.edit-button {
+  background-color: #008CBA;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.edit-button:hover {
+  background-color: #007bb5;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.delete-button {
+  background-color: #f44336;
+  color: white;
 }
+
+.delete-button:hover {
+  background-color: #e53935;
+}
+
